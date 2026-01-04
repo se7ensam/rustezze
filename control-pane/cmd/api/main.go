@@ -1,39 +1,27 @@
 package main
 
 import (
-	
 	"fmt"
-	"net/http"
-	"github.com/gin-gonic/gin"
+	
+	// Import your internal packages
 	"rusteze/control-pane/internal/jobs"
-	"github.com/google/uuid"
+	
+	// ⚠️ IMPORTANT: Alias this import because "http" conflicts with net/http
+	transport "rusteze/control-pane/internal/http"
 )
 
-func main(){
-	r := gin.Default()
+func main() {
+	fmt.Println("Initializing PixelGrid Control Plane...")
 
+	// 1. Initialize Layers (Dependency Injection)
+	store := jobs.NewMemoryStore()       // Data Layer
+	service := jobs.NewService(store)    // Business Logic Layer
+	handler := transport.NewJobHandler(service) // HTTP Layer
 
-	jobStore := make(map[string]*jobs.Job)
-	r.GET("/ping", func (c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message":"Control pane is online",
-		"system": "rusteze",
-	})
-})
-   
+	// 2. Setup Router
+	router := transport.NewRouter(handler)
 
-	r.POST("/upload",func (c *gin.Context){
-		jobID := "job_12345"
-		fmt.Println("Received upload request. Creating job:", jobID)
-		id := uuid.New().String()
-
-		newJob := jobs.NewJob(id)
-
-		jobStore[id] = newJob
-
-		c.JSON(http.StatusAccepted, newJob)
-	})
-
-	fmt.Println("Starting server on port 8080")
-	r.Run(":8080")
+	// 3. Start Server
+	fmt.Println("Server running on port 8080")
+	router.Run(":8080")
 }

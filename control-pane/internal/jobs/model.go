@@ -13,8 +13,7 @@ const (
 	JobStatusCompleted  JobStatus = "COMPLETED"
 	JobStatusFailed     JobStatus = "FAILED"
 )
-type Job struct
-{
+type Job struct{
 	ID        string    `json:"id"`
 	Status    JobStatus `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
