@@ -14,6 +14,7 @@ func NewRouter(handler *JobHandler) *gin.Engine {
 
 	r.POST("/upload", handler.CreateJob)
 	r.GET("/jobs/:id", handler.GetJob)
+	r.POST("/jobs/poll", handler.Poll)
 
 	return r
 }

@@ -44,3 +44,22 @@ func (h *JobHandler) GetJob(c *gin.Context) {
 
 	c.JSON(http.StatusOK, job)
 }
+func (h *JobHandler) Poll(c *gin.Context) {
+    // 1. Ask the Service for work
+    job, err := h.Service.PollJob()
+    
+    // 2. Handle System Errors (Database crashed, etc.)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Error"})
+        return
+    }
+
+    // 3. Handle "No Work" (Success, but empty)
+    if job == nil {
+        c.Status(http.StatusNoContent) // 204 No Content
+        return
+    }
+
+    // 4. Handle "Here is a Job"
+    c.JSON(http.StatusOK, job)
+}

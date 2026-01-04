@@ -4,6 +4,7 @@ import (
 	"errors"
 	"sync"
 	"fmt"
+	"time"
 )
 
 type MemoryStore struct {
@@ -54,4 +55,30 @@ func (s *MemoryStore) Get(id string) (*Job, error) {
 		return nil, errors.New("job not found")
 	}
 	return job, nil
+}
+
+func (s *MemoryStore) Dequeue() (*Job, error) {
+    fmt.Println("[Store] Dequeue: Waiting for lock to find work...")
+
+    s.mu.Lock()
+    defer func() {
+        fmt.Println("[Store] Dequeue: Unlocking.")
+        s.mu.Unlock()
+    }()
+
+    // Iterate through the map to find a 'CREATED' job
+    for _, job := range s.data {
+        if job.Status == JobStatusCreated {
+            fmt.Printf("[Store] Dequeue: Found job %s. Locking it for processing.\n", job.ID)
+            
+            // Atomic Update: Grab it so no one else can
+            job.Status = JobStatusProcessing
+            job.UpdatedAt = time.Now()
+            
+            return job, nil
+        }
+    }
+
+    // If loop finishes without returning, no work was found
+    return nil, nil
 }

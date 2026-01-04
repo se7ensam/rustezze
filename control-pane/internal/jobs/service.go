@@ -30,6 +30,9 @@ func (s *JobService) CreateJob(id string) *Job {
 func (s *JobService) GetJob(id string) (*Job, error) {
 	return s.store.Get(id)
 }
+func (s *JobService) PollJob() (*Job, error) {
+    return s.store.Dequeue()
+}
 
 
 func (s *JobService) UpdateStatus(id string, status JobStatus) error {
